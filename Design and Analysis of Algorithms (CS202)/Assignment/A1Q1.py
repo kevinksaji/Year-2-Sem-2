@@ -4,9 +4,11 @@ def power_modulo(m, k, n):
     if k == 0:
         return 1    
     if k % 2 == 0:
-        return (power_modulo(m, k/2, n) * power_modulo(m, k/2, n)) % n
+        temp1 = power_modulo(m, k/2, n)
+        return (temp1 * temp1) % n
     else:
-        return ((m % n) * power_modulo(m, (k-1)/2, n) * power_modulo(m, (k-1)/2, n)) % n
+        temp2 = power_modulo(m, (k-1)/2, n)
+        return ((m % n) * temp2 * temp2) % n
 
 num_line = int(sys.stdin.readline())
 for _ in range(num_line):
