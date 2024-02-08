@@ -38,16 +38,16 @@ def count_combinations(n, q):
         return 0
     return factorial(n) // (factorial(q) * factorial(n - q))
 
-# Current count is initialised as a list containing 1 integer so that the value persists across recursive calls
-def p10_lines_recursive(n, m, comb='', start=0, next_power_of_10=1, current_count=[0]):
+# current_count and next_power_of_10 is initialised as a list containing 1 integer so that 
+# the value persists across recursive calls
+def p10_lines_recursive(n, m, comb='', start=0, next_power_of_10=[1], current_count=[0]):
     # Check if we have a combination of the required length
     if len(comb) == m:
         current_count[0] += 1  # Increment the combination count
         # Print and update the next power of 10 if the current count matches
-        if current_count[0] == next_power_of_10:
+        if current_count[0] == next_power_of_10[0]:
             print(', '.join(map(str, comb)))  # Print the current combination
-            return next_power_of_10 * 10  # Return the next power of 10
-        return next_power_of_10  # Otherwise, just return the current next power of 10
+            next_power_of_10[0] *= 10  # Increment to next power of 10
 
     # Iterate over the range to generate combinations
     for i in range(start, n):
@@ -56,19 +56,17 @@ def p10_lines_recursive(n, m, comb='', start=0, next_power_of_10=1, current_coun
         # Calculate the number of combinations that can be made with the remaining spots
         remaining_combinations = count_combinations(n - i - 1, remaining - 1)
         # Check if the current count + possible combinations is enough to reach the next power of 10
-        if current_count[0] + remaining_combinations >= next_power_of_10:
+        if current_count[0] + remaining_combinations >= next_power_of_10[0]:
             # Recursive call with the new prefix, updating the start, and the next power of 10 is updated
             # when the current count eventually matches the next power of 10
-            next_power_of_10 = p10_lines_recursive(n, m, comb + (i,), i + 1, next_power_of_10, current_count)
+            p10_lines_recursive(n, m, comb + (i,), i + 1, next_power_of_10, current_count)
         else:
             # If not enough combinations can be made, just update the current count
             current_count[0] += remaining_combinations
 
-    return next_power_of_10  # Return the next power of 10 for the caller
-
 def p10_lines(n, m):
     # Call the recursive function with initial values
-    p10_lines_recursive(n, m, comb=(), start=0, next_power_of_10=1, current_count=[0])
+    p10_lines_recursive(n, m, comb=(), start=0, next_power_of_10=[1], current_count=[0])
 
 num_line = int(sys.stdin.readline())
 gn, gc = 0, [[1]]
