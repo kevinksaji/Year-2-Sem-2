@@ -38,6 +38,7 @@ def count_combinations(n, q):
         return 0
     return factorial(n) // (factorial(q) * factorial(n - q))
 
+# Current count is initialised as a list containing 1 integer so that the value persists across recursive calls
 def p10_lines_recursive(n, m, comb='', start=0, next_power_of_10=1, current_count=[0]):
     # Check if we have a combination of the required length
     if len(comb) == m:
@@ -56,7 +57,8 @@ def p10_lines_recursive(n, m, comb='', start=0, next_power_of_10=1, current_coun
         remaining_combinations = count_combinations(n - i - 1, remaining - 1)
         # Check if the current count + possible combinations is enough to reach the next power of 10
         if current_count[0] + remaining_combinations >= next_power_of_10:
-            # Recursive call with the new prefix, updating the start, and the next power of 10
+            # Recursive call with the new prefix, updating the start, and the next power of 10 is updated
+            # when the current count eventually matches the next power of 10
             next_power_of_10 = p10_lines_recursive(n, m, comb + (i,), i + 1, next_power_of_10, current_count)
         else:
             # If not enough combinations can be made, just update the current count
