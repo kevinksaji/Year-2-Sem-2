@@ -44,7 +44,7 @@ def p10_lines_recursive(n, m, comb='', start=0, next_power_of_10=1, current_coun
         current_count[0] += 1  # Increment the combination count
         # Print and update the next power of 10 if the current count matches
         if current_count[0] == next_power_of_10:
-            print(','.join(map(str, comb)))  # Print the current combination
+            print(', '.join(map(str, comb)))  # Print the current combination
             return next_power_of_10 * 10  # Return the next power of 10
         return next_power_of_10  # Otherwise, just return the current next power of 10
 
