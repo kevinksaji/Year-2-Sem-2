@@ -57,7 +57,8 @@ def p10_lines_recursive(n, m, comb='', start=0, next_power_of_10=[1], current_co
         remaining_combinations = count_combinations(n - i - 1, remaining - 1)
         # Check if the current count + possible combinations is enough to reach the next power of 10
         if current_count[0] + remaining_combinations >= next_power_of_10[0]:
-            # Recursive call with the new prefix, updating the start, and the next power of 10 is updated
+            # Recursive call with comb + i, start of for loop range moved to next position, 
+            # and the next power of 10 is updated
             # when the current count eventually matches the next power of 10
             p10_lines_recursive(n, m, comb + (i,), i + 1, next_power_of_10, current_count)
         else:
