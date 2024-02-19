@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <pthread.h>
 
 typedef enum process_status {
     RUNNING = 0,
@@ -35,7 +36,9 @@ enum {
 process_record process_records[MAX_PROCESSES]; // Initialize process records array
 
 void scheduler(void) {
+    
     for (int i = 0; i < MAX_PROCESSES; ++i) { // Set any currently RUNNING process to READY
+        
         if (process_records[i].status == RUNNING) {
             process_records[i].status = READY;
             kill(process_records[i].pid, SIGSTOP); // Send the STOP signal to the process when it is in READY state
@@ -77,6 +80,22 @@ void scheduler(void) {
     } else {
         printf("No READY processes available for scheduling.\n");
     }
+}
+
+
+void termination_check(void) {
+    for (int i = 0; i < MAX_PROCESSES; ++i) {
+        if (process_records[i].status == RUNNING) {
+            int status;
+            const pid_t pid = waitpid(process_records[i].pid, &status, WNOHANG);
+            if (pid == process_records[i].pid) {
+                process_records[i].status = TERMINATED;
+                printf("[%d] %d TERMINATED\n", i, process_records[i].pid);
+                scheduler();
+            }
+        }
+    }
+
 }
 
 void perform_stop(char *args[]) {
@@ -299,16 +318,19 @@ char *get_input(char *buffer, char *args[], int args_count_max) {
 
 int main(void) {
     char buffer[80];
-    // NULL-terminated array
     char *args[10];
     const int args_count = sizeof(args) / sizeof(*args);
     for (size_t i = 0; i < MAX_PROCESSES; ++i) {
-        process_records[i].status = 4;
+        process_records[i].status = UNUSED;
     }
-    while (true) {
-        char *const cmd = get_input(buffer, args, args_count);
-        if (strcmp(cmd, "kill") == 0) {
 
+
+    while (true) {
+        termination_check();
+
+        char *const cmd = get_input(buffer, args, args_count);
+
+        if (strcmp(cmd, "kill") == 0) {
             perform_kill(&args[1]);
         } else if (strcmp(cmd, "run") == 0) {
             perform_run(&args[1]);
@@ -324,6 +346,8 @@ int main(void) {
         } else {
             printf("invalid command\n");
         }
+
     }
     return EXIT_SUCCESS;
 }
+
