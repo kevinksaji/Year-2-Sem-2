@@ -1,8 +1,7 @@
 public class FactorialExample {
 
     private static final int repetitions = 100_000;
-
-    private static final int threadCount = 1;
+    private static final int threadCount = 4;
 
     private static void benchmark(Runnable callable) {
         final long startTime = System.currentTimeMillis();
@@ -24,28 +23,31 @@ public class FactorialExample {
     }
 
     public static void main(String[] args) {
-        final Runnable factorial = new Runnable() {
-            @Override
-            public void run() {
-                int count = 1;
-                for (int i = 1; i < repetitions; i++) {
-                    fact(i);
-                    count++;
-                }
-                System.out.println(
-                    "Thread completed " +
-                    count +
-                    " factorial computations."
-                );
-            }
-        };
-        
+        final int chunkSize = repetitions / threadCount;
+
         final Thread[] threads = new Thread[threadCount];
+
         benchmark(() -> {
             for (int i = 0; i < threadCount; i++) {
-                threads[i] = new Thread(factorial);
+                final int start = i * chunkSize + 1;
+                final int end = (i + 1) * chunkSize;
+
+                threads[i] = new Thread(() -> {
+                    int count = 0;
+                    for (int j = start; j <= end; j++) {
+                        fact(j);
+                        count++;
+                    }
+                    System.out.println(
+                        "Thread completed " +
+                        count +
+                        " factorial computations."
+                    );
+                });
+
                 threads[i].start();
             }
+
             for (int i = 0; i < threadCount; i++) {
                 try {
                     threads[i].join();
