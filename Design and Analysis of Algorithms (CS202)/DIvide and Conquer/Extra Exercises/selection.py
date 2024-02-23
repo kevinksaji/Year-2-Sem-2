@@ -7,6 +7,7 @@ random.shuffle(A)
 def partition(A, p, r):
     # implement partition in class exercise
     # and then copy-paste here
+    return
 
 def randomized_partition(A, p, r):
     i = random.randint(p, r)
