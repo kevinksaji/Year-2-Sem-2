@@ -29,6 +29,7 @@ public class LargeSumExample {
         final int[] numbers = new int[numberCount];
         /* Populate the array with initial numbers. */
         Arrays.fill(numbers, 1);
+        // commented out to mitigate warning, was not commented originally
         // if (numberCount % threadCount != 0) {
         //     System.err.println("The final sum will be incorrect.");
         // }
