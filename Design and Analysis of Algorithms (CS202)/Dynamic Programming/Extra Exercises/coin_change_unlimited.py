@@ -2,24 +2,18 @@
 
 denom = [1, 3, 4]
 m = len(denom)
-n = 30
+n = 6
 
 # with denomination [1, 3, 4] cents, what is the minimum number of coins to make up 30 cents?
 
-min_coin = [float('inf')] * (n+1)
+min_coin = [float('inf')] * (n+1)  # min_coin[i] is the minimum number of coins to make up i cents
 
-# this is the base case
-min_coin[0] = 0
+min_coin[0] = 0 # base case: 0 coins to make up 0 cents
 
-for i in range(n+1):
-    for j in range(m): # each time consider denomination denom[j]
-        if i>=denom[j]:
-            if min_coin[i-denom[j]]+1 < min_coin[i]:
-                min_coin[i] = min_coin[i-denom[j]]
-
-        
-    #use sub-prob (i - denom[0])
-    #use sub-prob (i - demnm[1])
-    #use sub-prob (i - denom[2])
-    for i in range(1, n+1):
-        print(i, 'cents:', min_coin[i], 'coins')
+for i in range(1, n+1): # i is the amount of cents we want to make up
+    for j in range(m): # denom[j is the denomination we consider
+        if i >= denom[j]: # if i is greater than or equal to the denomination, the denomination can be used to make up i cents
+            min_coin[i] = min(min_coin[i], 1 + min_coin[i-denom[j]]) # we take the minimum of the current minimum number of coins to make up i cents and 1 + the minimum number of coins to make up i-denom[j] cents
+    
+for i in range (n+1):
+    print(i, min_coin[i])
