@@ -26,6 +26,3 @@ num_line = int(sys.stdin.readline())
 for _ in range(num_line):
     a = [[int(t) for t in s.split(':')] for s in sys.stdin.readline().split()]
     print(bounded_knapsack([i[0] for i in a[:-1]], [i[1] for i in a[:-1]], [i[2] for i in a[:-1]], a[-1][0]))
-
-
-# Time complexity: O(n*W*Q), where n is the number of items, W is the weight limit, and Q is the maximum quantity of an item
