@@ -4,13 +4,13 @@ import random
 # the next denomination ~= the previous * 2, or plus/minus 1
 # for each denomination, generate a quantity between 10 and 20 inclusive
 
-random.seed('coin')
-curr = 1
-denom = [(curr, random.randint(10, 20))]
-for i in range(9):
-    curr = 2 * curr + 1 - random.randrange(3)
-    denom.append((curr, random.randint(10, 20)))
-print(denom)
+# random.seed('coin')
+# curr = 1
+# denom = [(curr, random.randint(10, 20))]
+# for i in range(9):
+#     curr = 2 * curr + 1 - random.randrange(3)
+#     denom.append((curr, random.randint(10, 20)))
+# print(denom)
 
 # solution to each subproblem, contain (1) the min number of coins, and (2) all plans with sum of coins being the min num of coins, this is because there is limited supply for each coin, one plan of x cents may allow us to reach x+5 cents, another plan may allow us to reach x+10 cents, depending on whether we have extra coins of 5 cents or 10 cents
 
@@ -21,8 +21,9 @@ class MinCoin:
     def add_plan(self, p):
         self.plan.append(p)
 
+denom  = [(3, 2), (5, 1),(6, 1)]
 m = len(denom)
-n = 2000
+n = 12
 
 min_coin_with_plan = [None] * (n + 1)
 min_coin_with_plan[0] = MinCoin(0, [0] * m)
@@ -40,12 +41,12 @@ for i in range(m): # suppose we already have solutions using denom[0], denom[1],
                         p_new[i] += 1 # add one coin of denom[i][0]
                         min_coin_with_plan[j].add_plan(p_new)
 
-'''
+
 # may print out and check
 for i in range(1, n+1):
     if min_coin_with_plan[i] is not None:
         print(i, min_coin_with_plan[i].num_coin, min_coin_with_plan[i].plan)
-'''
+
 
 # if we only consider the minimum number of coins without considering the plans
 

@@ -1,38 +1,78 @@
 import sys
-def LCMS(a, b):
+
+def longest_common_subsequence(a, b):
     m, n = len(a), len(b)
 
-    # Initialize 2D matrices for increasing and decreasing sequences
-    inc_seq = [[0] * n for _ in range(m)]
-    dec_seq = [[0] * n for _ in range(m)]
+    LCS = [[0] * (n+1) for _ in range(m+1)]
 
-    # Fill inc_seq with lengths of increasing subsequences ending at position i
-    for i in range(m):
-        for j in range(n):
-            if a[i] == b[j]: # If the element is common in a and b, it can be part of the increasing sequence
-                inc_seq[i][j] = 1  # Base case (length of increasing subsequence is 1)
-                for k in range(i): 
-                    for l in range(j):
-                        if a[k] == b[l] and a[k] < a[i] and b[l] < b[j]: # If a smaller common element is found in a and b at position k, l (left and above the current position)
-                            inc_seq[i][j] = max(inc_seq[i][j], inc_seq[k][l] + 1)
+    for i in range(m+1): #first row are all 0
+        LCS[i][0] = 0
 
-    # Fill dec_seq with lengths of decreasing subsequences starting at position i
-    for i in reversed(range(m)):
-        for j in reversed(range(n)):
-            if a[i] == b[j]: # If the element is common in a and b, it can be part of the decreasing sequence
-                dec_seq[i][j] = 1  # Base case (length of decreasing subsequence is 1)
-                for k in range(i+1, m):
-                    for l in range(j+1, n):
-                        if a[k] == b[l] and a[k] < a[i] and b[l] < b[j]:  # If a smaller common element is found in a and b at position k, l (right and below the current position)
-                            dec_seq[i][j] = max(dec_seq[i][j], dec_seq[k][l] + 1)
+    for j in range(n+1): #first column are all 0
+        LCS[0][j] = 0
 
-    # Compute LCMS
+    # start from 1 because the first row and column are already filled with 0 (base case)
+    for i in range(1, m+1):
+        for j in range(1, n+1): # build LCS[i][j]
+            if a[i-1] == b[j-1]: # if the two elements are the same
+                LCS[i][j] = LCS[i-1][j-1] + 1 # add 1 to the previous LCS (add 1 to the value in the top left cell of the current cell)
+            else:
+                LCS[i][j] = max(LCS[i-1][j], LCS[i][j-1]) # take the maximum of the previous LCS (max of the cell above and the cell beside)
+
+    
+    # Backtrack and return the integers in the LCS
+    i, j = m, n
+    lcs = []
+    while i > 0 and j > 0:
+        if a[i-1] == b[j-1]: # if the two elements are the same
+            lcs.append(a[i-1]) # add the element to the LCS
+            i -= 1
+            j -= 1
+        elif LCS[i-1][j] > LCS[i][j-1]: # if the value in the cell above is greater than the value in the cell beside
+            i -= 1
+        else:
+            j -= 1
+
+    lcs.reverse() # reverse the list of items to get the correct order
+
+    return lcs
+
+def compute_LIS(sequence):
+    # Function that computes the longest increasing subsequence ending at index i
+    # sequence_values[i] is the length of the longest increasing subsequence ending at index i
+    
+    sequence_values_LIS = [1] * len(sequence)
+    for i in range(1, len(sequence)): # iterate from the second element as the first element is already set to 1
+        for j in range(i): # iterate from the start of the sequence to the current index
+            if sequence[i] > sequence[j]: # element at j has to always be strictly smaller than pivot element at i (increasing sequence from left to right)
+                sequence_values_LIS[i] = max(sequence_values_LIS[i], sequence_values_LIS[j] + 1)
+    
+    return sequence_values_LIS
+    
+def compute_LDS(sequence):
+    # Function that computes the longest decreasing subsequence starting at index i
+    # sequence_values[i] is the length of the longest decreasing subsequence starting at index i
+
+    sequence_values_LDS = [1] * len(sequence)
+    for i in range(len(sequence)-2, -1, -1): # iterate from the second last element to the first element (last element is already set to 1)
+        for j in range(i + 1, len(sequence)): # iterate from the index after i to the end of the sequence
+            if sequence[i] > sequence[j]: # element at j has to always be strictly smaller than pivot element at i (decreasing sequence from left to right)
+                sequence_values_LDS[i] = max(sequence_values_LDS[i], sequence_values_LDS[j] + 1)
+    
+    return sequence_values_LDS
+
+def LCMS(a, b):
+    lcs = longest_common_subsequence(a, b)
+    LIS = compute_LIS(lcs)
+    LDS = compute_LDS(lcs)
+
     max_length = 0 # Initialise max length of the mountain sequence
     
-    for i in range(m):
-        for j in range(n):
-            if inc_seq[i][j] > 1 and dec_seq[i][j] > 1: # If the element is part of both an increasing and decreasing sequence
-                max_length = max(max_length, inc_seq[i][j] + dec_seq[i][j] - 1) # -1 because the peak element is counted twice
+    #Iterate over the elements in lcs, and find the longest mountain sequence
+    for i in range(len(lcs)):
+        # Find the longest mountain sequence with i as the peak
+            if (LIS[i] > 1 and LDS[i] > 1): # if the peak has at least 2 elements for both increasing and decreasing subsequences
+                max_length = max(max_length, LIS[i] + LDS[i] - 1) # -1 because the peak is counted twice
 
     return max_length
 

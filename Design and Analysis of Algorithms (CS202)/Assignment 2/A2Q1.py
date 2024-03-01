@@ -3,8 +3,7 @@ import sys
 def bounded_knapsack(weight, value, quantity, limit):
     n = len(weight) # number of items
 
-    # set the first row and column to 0
-    max_value = [[0] * (limit+1) for _ in range(n+1)]
+    max_value = [[0] * (limit+1) for _ in range(n+1)] # initialise max_value table
 
     # fill the table
     for i in range(1, n + 1): # iterate over the different items
