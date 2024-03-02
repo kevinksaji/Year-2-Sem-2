@@ -1,80 +1,71 @@
 import sys
 
-def longest_common_subsequence(a, b):
-    m, n = len(a), len(b)
-
-    LCS = [[0] * (n+1) for _ in range(m+1)]
-
-    for i in range(m+1): #first row are all 0
-        LCS[i][0] = 0
-
-    for j in range(n+1): #first column are all 0
-        LCS[0][j] = 0
-
-    # start from 1 because the first row and column are already filled with 0 (base case)
-    for i in range(1, m+1):
-        for j in range(1, n+1): # build LCS[i][j]
-            if a[i-1] == b[j-1]: # if the two elements are the same
-                LCS[i][j] = LCS[i-1][j-1] + 1 # add 1 to the previous LCS (add 1 to the value in the top left cell of the current cell)
-            else:
-                LCS[i][j] = max(LCS[i-1][j], LCS[i][j-1]) # take the maximum of the previous LCS (max of the cell above and the cell beside)
-
-    
-    # Backtrack and return the integers in the LCS
-    i, j = m, n
-    lcs = []
-    while i > 0 and j > 0:
-        if a[i-1] == b[j-1]: # if the two elements are the same
-            lcs.append(a[i-1]) # add the element to the LCS
-            i -= 1
-            j -= 1
-        elif LCS[i-1][j] > LCS[i][j-1]: # if the value in the cell above is greater than the value in the cell beside
-            i -= 1
+def binary_search(sub, val):
+    """Helper function to perform binary search on the subsequence."""
+    left, right = 0, len(sub) - 1
+    while left <= right:
+        mid = left + (right - left) // 2
+        if sub[mid] == val:
+            return mid
+        elif sub[mid] < val:
+            left = mid + 1
         else:
-            j -= 1
+            right = mid - 1
+    return left
 
-    lcs.reverse() # reverse the list of items to get the correct order
-
-    return lcs
-
-def compute_LIS(sequence):
-    # Function that computes the longest increasing subsequence ending at index i
-    # sequence_values[i] is the length of the longest increasing subsequence ending at index i
+def LCMS(A, B):
     
-    sequence_values_LIS = [1] * len(sequence)
-    for i in range(1, len(sequence)): # iterate from the second element as the first element is already set to 1
-        for j in range(i): # iterate from the start of the sequence to the current index
-            if sequence[i] > sequence[j]: # element at j has to always be strictly smaller than pivot element at i (increasing sequence from left to right)
-                sequence_values_LIS[i] = max(sequence_values_LIS[i], sequence_values_LIS[j] + 1)
     
-    return sequence_values_LIS
+    # Map each number to its indices in B
+    indices_in_B = {}
+    for i, b in enumerate(B):
+        indices_in_B[b] = i  # We only keep the last occurrence as we're looking for the peak
+
+    # Filter A to contain only elements also in B and track the first occurrence
+    A_filtered = []
+    indices_in_A = {}
+    for idx, a in enumerate(A):
+        if a in indices_in_B and a not in indices_in_A:
+            A_filtered.append(a)
+            indices_in_A[a] = idx  # We only keep the first occurrence as we're looking for the peak
+
+    n = len(A_filtered)
     
-def compute_LDS(sequence):
-    # Function that computes the longest decreasing subsequence starting at index i
-    # sequence_values[i] is the length of the longest decreasing subsequence starting at index i
+    # Initialize the lists to store the longest subsequence lengths
+    lis = [0] * n
+    lds = [0] * n
 
-    sequence_values_LDS = [1] * len(sequence)
-    for i in range(len(sequence)-2, -1, -1): # iterate from the second last element to the first element (last element is already set to 1)
-        for j in range(i + 1, len(sequence)): # iterate from the index after i to the end of the sequence
-            if sequence[i] > sequence[j]: # element at j has to always be strictly smaller than pivot element at i (decreasing sequence from left to right)
-                sequence_values_LDS[i] = max(sequence_values_LDS[i], sequence_values_LDS[j] + 1)
-    
-    return sequence_values_LDS
+    # Initialize the lists to store the actual subsequences for binary search
+    lis_tails = [-1] * n
+    lds_tails = [-1] * n
+    lis_length = 0
+    lds_length = 0
 
-def LCMS(a, b):
-    lcs = longest_common_subsequence(a, b)
-    LIS = compute_LIS(lcs)
-    LDS = compute_LDS(lcs)
+    # Calculate the LIS for the filtered A
+    for i, a in enumerate(A_filtered):
+        idx = binary_search(lis_tails, a, lis_length)
+        lis_tails[idx] = a
+        lis_length = max(lis_length, idx + 1)
+        lis[i] = idx + 1
 
-    max_length = 0 # Initialise max length of the mountain sequence
-    
-    #Iterate over the elements in lcs, and find the longest mountain sequence
-    for i in range(len(lcs)):
-        # Find the longest mountain sequence with i as the peak
-            if (LIS[i] > 1 and LDS[i] > 1): # if the peak has at least 2 elements for both increasing and decreasing subsequences
-                max_length = max(max_length, LIS[i] + LDS[i] - 1) # -1 because the peak is counted twice
+    # Calculate the LDS for the filtered A in reverse
+    for i, a in enumerate(reversed(A_filtered)):
+        idx = binary_search(lds_tails, a, lds_length)
+        lds_tails[idx] = a
+        lds_length = max(lds_length, idx + 1)
+        lds[n - 1 - i] = idx + 1
 
-    return max_length
+    # Find the length of the LCMS using LIS and LDS
+    max_lcms = 0
+    for i in range(n):
+        a = A_filtered[i]
+        if lis[i] > 1 and lds[i] > 1:  # Valid mountain must be strictly increasing and then decreasing
+            max_lcms = max(max_lcms, lis[i] + lds[i] - 1)
+
+    return max_lcms
+
+# We will test the function with actual data after finalizing the implementation.
+
 
 num_pair = int(sys.stdin.readline())
 for _ in range(num_pair):
