@@ -95,44 +95,36 @@ public class Restaurant {
         }
     }
 
-    // Waiter class
     static class Waiter implements Runnable {
         private int id;
-
+    
         public Waiter(int id) {
             this.id = id;
         }
-
+    
         @Override
         public void run() {
             try {
                 while (true) {
-                    // Place orders if not all orders have been placed
-                    if (Order.lastId < NUM_ORDERS) {
-                        Thread.sleep(TIME_PLACEMENT); // Simulate time to place an order
-                        synchronized (orderQueue) {
-                            if (ordersPlaced < NUM_ORDERS) {
-                                ordersPlaced++;
-                                Order order = new Order();
-                                orderQueue.put(order);
-                                log("Waiter", id, "Order Placed", order.getId());
-                            }
-                        }
-                    }
-
-                    // Serve orders if there are any prepared
+                    // Serve orders if available
                     if (!preparedQueue.isEmpty()) {
+                        Order servedOrder = preparedQueue.take(); // This will block if queue is empty
                         Thread.sleep(TIME_SERVING); // Simulate time to serve an order
-                        synchronized (preparedQueue) {
-                            if (!preparedQueue.isEmpty()) {
-                                Order servedOrder = preparedQueue.take();
-                                log("Waiter", id, "Order Served", servedOrder.getId());
-                            }
+                        log("Waiter", id, "Order Served", servedOrder.getId());
+                    }
+    
+                    // Place new orders only if not all orders have been placed
+                    synchronized (Order.class) {
+                        if (Order.lastId < NUM_ORDERS) {
+                            Thread.sleep(TIME_PLACEMENT); // Simulate time to place an order
+                            Order order = new Order();
+                            orderQueue.put(order); // This will block if queue is full
+                            log("Waiter", id, "Order Placed", order.getId());
                         }
                     }
-
+    
                     // Break the loop if all orders are placed and served
-                    if (ordersPlaced == NUM_ORDERS && preparedQueue.isEmpty()) {
+                    if (Order.lastId == NUM_ORDERS && preparedQueue.isEmpty()) {
                         break;
                     }
                 }
@@ -143,32 +135,30 @@ public class Restaurant {
             }
         }
     }
+    
 
-    // Chef class
-    static class Chef implements Runnable {
-        private int id;
+// Chef class
+static class Chef implements Runnable {
+    private int id;
 
-        public Chef(int id) {
-            this.id = id;
-        }
+    public Chef(int id) {
+        this.id = id;
+    }
 
-        @Override
-        public void run() {
-            try {
-                while (Order.lastId <= NUM_ORDERS) {
-                    Order order = orderQueue.take();
-                    // Simulate time taken to prepare an order
-                    Thread.sleep(TIME_PREPARATION);
-                    synchronized (preparedQueue) {
-                        preparedQueue.put(order);
-                        log("Chef", id, "Order Prepared", order.getId());
-                    }
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } finally {
-                latch.countDown();
+    @Override
+    public void run() {
+        try {
+            while (!orderQueue.isEmpty() || Order.lastId < NUM_ORDERS) { 
+                Order order = orderQueue.take(); // This will block if queue is empty
+                Thread.sleep(TIME_PREPARATION); // Simulate time taken to prepare an order
+                preparedQueue.put(order); // This will block if queue is full
+                log("Chef", id, "Order Prepared", order.getId());
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            latch.countDown();
         }
     }
+}
 }
