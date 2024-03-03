@@ -1,7 +1,7 @@
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.io.*;
 import java.util.*;
-import java.text.*;
 
 public class Restaurant {
     // Variables for configuration values
@@ -17,7 +17,9 @@ public class Restaurant {
     // Queues for placing and preparing orders
     private static BlockingQueue<Order> orderQueue;
     private static BlockingQueue<Order> preparedQueue;
-    private static int ordersPlaced = 0; // Counter for orders placed
+
+    // Atomic variable to track the number of orders placed
+    private static AtomicInteger ordersPlaced = new AtomicInteger(0);
 
     // Synchronization control for chefs and waiters
     private static CountDownLatch latch;
@@ -46,6 +48,13 @@ public class Restaurant {
 
             // Wait for all threads to finish
             latch.await();
+
+            // Termination message
+            System.out.println("All orders are served. Restaruant is closed now.");
+
+            // Exit the program
+            System.exit(0);
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -81,17 +90,18 @@ public class Restaurant {
 
     // Order class
     static class Order {
-        private static int lastId = 0;
+        private static int lastId = -1;
         private int id;
 
         public Order() {
-            synchronized (Order.class) {
+            synchronized (Order.class) { // Synchronize on the class object
                 this.id = ++lastId;
             }
         }
 
         public int getId() {
             return id;
+
         }
     }
 
@@ -105,25 +115,20 @@ public class Restaurant {
         @Override
         public void run() {
             try {
+                while (ordersPlaced.get() < NUM_ORDERS) { 
+                    Thread.sleep(TIME_PLACEMENT); // Simulate time to place an order
+                    Order order = new Order();
+                    ordersPlaced.incrementAndGet(); // Increment the number of orders placed
+                    orderQueue.put(order); // This will block if queue is full
+                    log("Waiter", id, "Order Placed", order.getId());
+                }
+
                 while (true) {
-                    // Serve orders if available
-                    if (!preparedQueue.isEmpty()) {
-                        Order servedOrder = preparedQueue.take(); // This will block if queue is empty
-                        Thread.sleep(TIME_SERVING); // Simulate time to serve an order
-                        log("Waiter", id, "Order Served", servedOrder.getId());
-                    }
-    
-                    // Place new orders only if not all orders have been placed
-                    synchronized (Order.class) {
-                        if (Order.lastId < NUM_ORDERS) {
-                            Thread.sleep(TIME_PLACEMENT); // Simulate time to place an order
-                            Order order = new Order();
-                            orderQueue.put(order); // This will block if queue is full
-                            log("Waiter", id, "Order Placed", order.getId());
-                        }
-                    }
-    
-                    // Break the loop if all orders are placed and served
+                    Order servedOrder = preparedQueue.take(); // This will block if queue is empty
+                    Thread.sleep(TIME_SERVING); // Simulate time to serve an order
+                    log("Waiter", id, "Order Served", servedOrder.getId());
+
+                    // Break the loop if all orders are served
                     if (Order.lastId == NUM_ORDERS && preparedQueue.isEmpty()) {
                         break;
                     }
@@ -137,28 +142,34 @@ public class Restaurant {
     }
     
 
-// Chef class
-static class Chef implements Runnable {
-    private int id;
+    static class Chef implements Runnable {
+        private int id;
 
-    public Chef(int id) {
-        this.id = id;
-    }
+        public Chef(int id) {
+            this.id = id;
+        }
 
-    @Override
-    public void run() {
-        try {
-            while (!orderQueue.isEmpty() || Order.lastId < NUM_ORDERS) { 
-                Order order = orderQueue.take(); // This will block if queue is empty
-                Thread.sleep(TIME_PREPARATION); // Simulate time taken to prepare an order
-                preparedQueue.put(order); // This will block if queue is full
-                log("Chef", id, "Order Prepared", order.getId());
+        @Override
+        public void run() {
+            try {
+                while (true) { 
+                    Order order = orderQueue.take(); // Poll with a timeout
+                    
+                        // break the loop if all orders are placed and the queue is empty
+                        if (Order.lastId >= NUM_ORDERS) {
+                            break;
+                        }
+                       
+                    
+                    Thread.sleep(TIME_PREPARATION); // simulate time taken to prepare an order
+                    preparedQueue.put(order); // this will block if queue is full
+                    log("Chef", id, "Order Prepared", order.getId());
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                latch.countDown();
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } finally {
-            latch.countDown();
         }
     }
-}
 }
