@@ -2,7 +2,7 @@ import sys
 def LCMS(a, b):
     m, n = len(a), len(b)
 
-    # Initialize m x n matrices for increasing and decreasing sequences
+    # initialize m x n matrices for increasing and decreasing sequences
     inc_seq = [[0] * n for _ in range(m)]
     dec_seq = [[0] * n for _ in range(m)]
 
@@ -15,7 +15,7 @@ def LCMS(a, b):
         else:
             b_map[x] = [i]
 
-    # fill inc_seq with lengths of increasing subsequences ending at position i
+    # Fill inc_seq with lengths of increasing subsequences ending at position i
     for i in range(m):
         for j in range(n):
             if a[i] == b[j]:
@@ -23,26 +23,26 @@ def LCMS(a, b):
                 for k in range(i):
                     if a[k] in b_map: # if there is a common element to the left of i
                         for l in b_map[a[k]]: # look at the indices of the common element in b
-                            if l < j and a[k] < a[i] and inc_seq[k][l] + 1 > inc_seq[i][j]: # make sure the index in b is smaller than j and the element is smaller than the one at a[i] (increasing sequence to i)
-                                inc_seq[i][j] = inc_seq[k][l] + 1
+                            if l < j and a[k] < a[i]: # make sure the index in b is smaller than j to preserve order and the element is smaller than the one at a[i] (increasing sequence to i)
+                                inc_seq[i][j] = max(inc_seq[i][j], inc_seq[k][l] + 1)
 
-    # fill dec_seq with lengths of decreasing subsequences starting at position i
-    for i in reversed(range(m)):
+    # Fill dec_seq with lengths of decreasing subsequences starting at position i
+    for i in reversed(range(m)): # iterate in revesed order
         for j in reversed(range(n)):
             if a[i] == b[j]:
                 dec_seq[i][j] = 1  # base case (length of decreasing subsequence is 1)
                 for k in range(i+1, m):
                     if a[k] in b_map: # if there is a common element to the right
                         for l in b_map[a[k]]: # look at the indices of the common element in b
-                            if l > j and a[k] < a[i] and dec_seq[k][l] + 1 > dec_seq[i][j]: # make sure the index in b is larger than j and the element is smaller than the one at a[i] (decreasing sequence away from i)
-                                dec_seq[i][j] = dec_seq[k][l] + 1
+                            if l > j and a[k] < a[i]: # make sure the index in b is larger than j and the element is smaller than the one at a[i] (decreasing sequence away from i)
+                                dec_seq[i][j] = max(dec_seq[i][j], dec_seq[k][l] + 1)
 
     # Compute LCMS
-    max_length = 0 # Initialise max length of the mountain sequence
+    max_length = 0 # initialise max length of the mountain sequence
     
     for i in range(m):
         for j in range(n):
-            if a[i] == b[j] and inc_seq[i][j] > 1 and dec_seq[i][j] > 1: # If the element is part of both an increasing and decreasing sequence
+            if a[i] == b[j] and inc_seq[i][j] > 1 and dec_seq[i][j] > 1: # if the element is a possible peak (at least 2 elements in both increasing and decreasing sequence)
                 max_length = max(max_length, inc_seq[i][j] + dec_seq[i][j] - 1) # -1 because the peak element is counted twice
 
     return max_length
@@ -50,6 +50,6 @@ def LCMS(a, b):
 
 num_pair = int(sys.stdin.readline())
 for _ in range(num_pair):
-    a = [int(s, 16) for s in sys.stdin.readline().split()]
-    b = [int(s, 16) for s in sys.stdin.readline().split()]
+    a = [int(s, 16) for s in sys.stdin.readline().split()] # convert hexadecimal input to decimal
+    b = [int(s, 16) for s in sys.stdin.readline().split()] # convert hexadecimal input to decimal
     print(LCMS(a, b))
