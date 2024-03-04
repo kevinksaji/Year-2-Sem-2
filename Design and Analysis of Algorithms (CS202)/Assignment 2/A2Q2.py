@@ -53,3 +53,14 @@ for _ in range(num_pair):
     a = [int(s, 16) for s in sys.stdin.readline().split()] # convert hexadecimal input to decimal
     b = [int(s, 16) for s in sys.stdin.readline().split()] # convert hexadecimal input to decimal
     print(LCMS(a, b))
+
+
+# Worst case time complexity: O(m^2 n^2). 
+
+# The initialisation of matrices inc_seq and dec_seq have time complexity O(m * n), and the 
+# creation of b_map takes O(n) time. There are 4 nested loops in the process of filling inc_seq matrix. 
+# The first loop iterates over m elements, the second loop iterates over n elements, the third loop will 
+# iterate over m elements in the worst case. and the last loop will iterate over n elements in the worst case. 
+# hence the worst case time complexity is O(m^2 n^2). It is the same time complexity for filling up dec_seq. 
+# Computing the LCMS involves 2 nested for loops of size m and n respectively, giving it O(m*n) time complexity. 
+# Hence the worst case time complexity for this algorithm is O(m^2 n^2).
