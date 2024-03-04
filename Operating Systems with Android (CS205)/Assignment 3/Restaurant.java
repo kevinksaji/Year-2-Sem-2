@@ -114,20 +114,28 @@ public class Restaurant {
     
         @Override
         public void run() {
-            try {
-                while (ordersPlaced.get() < NUM_ORDERS) { 
-                    Thread.sleep(TIME_PLACEMENT); // Simulate time to place an order
-                    Order order = new Order();
-                    ordersPlaced.incrementAndGet(); // Increment the number of orders placed
-                    orderQueue.put(order); // This will block if queue is full
-                    log("Waiter", id, "Order Placed", order.getId());
+            Thread orderPlacingThread = new Thread(() -> {
+                try {
+                    while (ordersPlaced.get() < NUM_ORDERS) {
+                        Thread.sleep(TIME_PLACEMENT); // Simulate time to place an order
+                        Order order = new Order();
+                        ordersPlaced.incrementAndGet(); // Increment the number of orders placed
+                        orderQueue.put(order); // This will block if queue is full
+                        log("Waiter", id, "Order Placed", order.getId());
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
-
+            });
+    
+            orderPlacingThread.start();
+    
+            try {
                 while (true) {
                     Order servedOrder = preparedQueue.take(); // This will block if queue is empty
                     Thread.sleep(TIME_SERVING); // Simulate time to serve an order
                     log("Waiter", id, "Order Served", servedOrder.getId());
-
+    
                     // Break the loop if all orders are served
                     if (Order.lastId == NUM_ORDERS && preparedQueue.isEmpty()) {
                         break;
@@ -136,6 +144,11 @@ public class Restaurant {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             } finally {
+                try {
+                    orderPlacingThread.join(); // Ensure the order placing thread has finished
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
                 latch.countDown();
             }
         }

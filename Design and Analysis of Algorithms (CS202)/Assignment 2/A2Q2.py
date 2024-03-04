@@ -1,70 +1,51 @@
 import sys
+def LCMS(a, b):
+    m, n = len(a), len(b)
 
-def binary_search(sub, val):
-    """Helper function to perform binary search on the subsequence."""
-    left, right = 0, len(sub) - 1
-    while left <= right:
-        mid = left + (right - left) // 2
-        if sub[mid] == val:
-            return mid
-        elif sub[mid] < val:
-            left = mid + 1
+    # Initialize m x n matrices for increasing and decreasing sequences
+    inc_seq = [[0] * n for _ in range(m)]
+    dec_seq = [[0] * n for _ in range(m)]
+
+    # map each common element in a and b to its corresponding index in b. the key is the element in b, 
+    # the value is a list of indices where that element is present in b (there can be duplicate common elements)
+    b_map = {}
+    for i, x in enumerate(b):
+        if x in b_map:
+            b_map[x].append(i)
         else:
-            right = mid - 1
-    return left
+            b_map[x] = [i]
 
-def LCMS(A, B):
+    # fill inc_seq with lengths of increasing subsequences ending at position i
+    for i in range(m):
+        for j in range(n):
+            if a[i] == b[j]:
+                inc_seq[i][j] = 1  # base case (length of increasing subsequence is 1)
+                for k in range(i):
+                    if a[k] in b_map: # if there is a common element to the left of i
+                        for l in b_map[a[k]]: # look at the indices of the common element in b
+                            if l < j and a[k] < a[i] and inc_seq[k][l] + 1 > inc_seq[i][j]: # make sure the index in b is smaller than j and the element is smaller than the one at a[i] (increasing sequence to i)
+                                inc_seq[i][j] = inc_seq[k][l] + 1
+
+    # fill dec_seq with lengths of decreasing subsequences starting at position i
+    for i in reversed(range(m)):
+        for j in reversed(range(n)):
+            if a[i] == b[j]:
+                dec_seq[i][j] = 1  # base case (length of decreasing subsequence is 1)
+                for k in range(i+1, m):
+                    if a[k] in b_map: # if there is a common element to the right
+                        for l in b_map[a[k]]: # look at the indices of the common element in b
+                            if l > j and a[k] < a[i] and dec_seq[k][l] + 1 > dec_seq[i][j]: # make sure the index in b is larger than j and the element is smaller than the one at a[i] (decreasing sequence away from i)
+                                dec_seq[i][j] = dec_seq[k][l] + 1
+
+    # Compute LCMS
+    max_length = 0 # Initialise max length of the mountain sequence
     
-    
-    # Map each number to its indices in B
-    indices_in_B = {}
-    for i, b in enumerate(B):
-        indices_in_B[b] = i  # We only keep the last occurrence as we're looking for the peak
+    for i in range(m):
+        for j in range(n):
+            if a[i] == b[j] and inc_seq[i][j] > 1 and dec_seq[i][j] > 1: # If the element is part of both an increasing and decreasing sequence
+                max_length = max(max_length, inc_seq[i][j] + dec_seq[i][j] - 1) # -1 because the peak element is counted twice
 
-    # Filter A to contain only elements also in B and track the first occurrence
-    A_filtered = []
-    indices_in_A = {}
-    for idx, a in enumerate(A):
-        if a in indices_in_B and a not in indices_in_A:
-            A_filtered.append(a)
-            indices_in_A[a] = idx  # We only keep the first occurrence as we're looking for the peak
-
-    n = len(A_filtered)
-    
-    # Initialize the lists to store the longest subsequence lengths
-    lis = [0] * n
-    lds = [0] * n
-
-    # Initialize the lists to store the actual subsequences for binary search
-    lis_tails = [-1] * n
-    lds_tails = [-1] * n
-    lis_length = 0
-    lds_length = 0
-
-    # Calculate the LIS for the filtered A
-    for i, a in enumerate(A_filtered):
-        idx = binary_search(lis_tails, a, lis_length)
-        lis_tails[idx] = a
-        lis_length = max(lis_length, idx + 1)
-        lis[i] = idx + 1
-
-    # Calculate the LDS for the filtered A in reverse
-    for i, a in enumerate(reversed(A_filtered)):
-        idx = binary_search(lds_tails, a, lds_length)
-        lds_tails[idx] = a
-        lds_length = max(lds_length, idx + 1)
-        lds[n - 1 - i] = idx + 1
-
-    # Find the length of the LCMS using LIS and LDS
-    max_lcms = 0
-    for i in range(n):
-        a = A_filtered[i]
-        if lis[i] > 1 and lds[i] > 1:  # Valid mountain must be strictly increasing and then decreasing
-            max_lcms = max(max_lcms, lis[i] + lds[i] - 1)
-
-    return max_lcms
-
-# We will test the function with actual data after finalizing the implementation.
+    return max_length
 
 
 num_pair = int(sys.stdin.readline())
