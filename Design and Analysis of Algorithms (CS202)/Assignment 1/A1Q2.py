@@ -36,7 +36,7 @@ def count_combinations(n, r):
     if n < 0 or r < 0 or n < r:
         # Return 0
         return 0
-    return factorial(n) // (factorial(r) * factorial(n - r))
+    return factorial(n) // (factorial(r) * factorial(n - r)) # n choose r
 
 # current_count and next_power_of_10 is initialised as a list containing 1 integer so that 
 # the value persists across recursive calls

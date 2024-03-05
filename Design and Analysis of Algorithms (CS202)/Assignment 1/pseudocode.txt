@@ -1,0 +1,24 @@
+u can make the gen 2 algo more efficient by reducing unecessary recursive calls. that algo calls for 
+every possible combo. we only need the combinations at powers of 10 positions. 
+
+so u can persist variables across recursive calls by using a single integer within a list (lists are mutable)
+pretty cool actually. so i have 2 variables, current count of combinations and next power of 10. 
+that keep track of those values
+
+i have another variable comb that is not being persisted, its where the combinashun is being built. 
+
+so my base case just checks if comb is the same length as m, then checks if the current count = next power of 10. 
+if both are true it is printed out and the next power of 10 value is increased 
+
+then the recursive case uses a for loop like gen_2 but it doesnt always just call the function for all combos. 
+so when the for loop is entered, combs string will be like an incomplete combination with a few spaces remaining. 
+the start of the for loop is the first empty position, end is n then i have a helper function which calculates the 
+remaining possible combinations with the current comb as prefix. n choose r formula.
+
+if current count + remaining combinations is more than the next power of 10, it means that the combs + current value of i 
+is included in the next power of 10 combination. then i call the recursive function again, i update combs to be combs + i 
+and start will be start + 1 (moved to next position) 
+
+else (current count + rem combinations is less than next power of 10) it means that the combs + current value of i is 
+not included in next power of 10 combination, so i just add remaining combinations to total count and the for loop repeats 
+with comb + the next i
