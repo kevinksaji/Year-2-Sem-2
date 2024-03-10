@@ -25,9 +25,3 @@ num_line = int(sys.stdin.readline())
 for _ in range(num_line):
     a = [[int(t) for t in s.split(':')] for s in sys.stdin.readline().split()]
     print(bounded_knapsack([i[0] for i in a[:-1]], [i[1] for i in a[:-1]], [i[2] for i in a[:-1]], a[-1][0]))
-
-# The time complexity is O(n * limit * max(quantity)) because we have 3 nested loops. 
-# The outermost loop iterates over the different items, the second loop iterates over the maximum weights, 
-# and the innermost loop iterates over the possible quantities. 
-# The outermost loop iterates over n items, the second loop iterates over the maximum weights, 
-# and the innermost loop iterates over the possible quantities. Therefore, the time complexity is O(n * limit * max(quantity)).
