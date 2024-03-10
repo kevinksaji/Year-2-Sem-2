@@ -11,14 +11,16 @@ def LCMS(a, b):
     b_map = {}
     for i, x in enumerate(b):
         if x in b_map:
-            b_map[x].append(i)
+            b_map[x].append(i) # append the index to the list of indices if the element is already in the map
         else:
-            b_map[x] = [i]
+            b_map[x] = [i] # create a new list with the index if the element is not in the map
 
-    # Fill inc_seq with lengths of increasing subsequences ending at position i
+    # Chat GPT prompt: What would be the approach to find the longest increasing sequence to each element in an integer array?
+            
+    # fill inc_seq with lengths of increasing subsequences ending at position i
     for i in range(m):
         for j in range(n):
-            if a[i] == b[j]:
+            if a[i] == b[j]: # if the element is common to both a and b
                 inc_seq[i][j] = 1  # base case (length of increasing subsequence is 1)
                 for k in range(i):
                     if a[k] in b_map: # if there is a common element to the left of i
@@ -26,10 +28,15 @@ def LCMS(a, b):
                             if l < j and a[k] < a[i]: # make sure the index in b is smaller than j to preserve order and the element is smaller than the one at a[i] (increasing sequence to i)
                                 inc_seq[i][j] = max(inc_seq[i][j], inc_seq[k][l] + 1)
 
-    # Fill dec_seq with lengths of decreasing subsequences starting at position i
+
+    # Chat GPT prompt: So if i wanted to find the longest decreasing sequence from each element, 
+    # the approach would be similar but just looking at all the elements after i instead of before, 
+    #to find the optimised sub problem?
+                                
+    # fill dec_seq with lengths of decreasing subsequences starting at position i
     for i in reversed(range(m)): # iterate in revesed order
         for j in reversed(range(n)):
-            if a[i] == b[j]:
+            if a[i] == b[j]: # if the element is common to both a and b
                 dec_seq[i][j] = 1  # base case (length of decreasing subsequence is 1)
                 for k in range(i+1, m):
                     if a[k] in b_map: # if there is a common element to the right
@@ -53,14 +60,3 @@ for _ in range(num_pair):
     a = [int(s, 16) for s in sys.stdin.readline().split()] # convert hexadecimal input to decimal
     b = [int(s, 16) for s in sys.stdin.readline().split()] # convert hexadecimal input to decimal
     print(LCMS(a, b))
-
-
-# Worst case time complexity: O(m^2 n^2). 
-
-# The initialisation of matrices inc_seq and dec_seq have time complexity O(m * n), and the 
-# creation of b_map takes O(n) time. There are 4 nested loops in the process of filling inc_seq matrix. 
-# The first loop iterates over m elements, the second loop iterates over n elements, the third loop will 
-# iterate over m elements in the worst case. and the last loop will iterate over n elements in the worst case. 
-# hence the worst case time complexity is O(m^2 n^2). It is the same time complexity for filling up dec_seq. 
-# Computing the LCMS involves 2 nested for loops of size m and n respectively, giving it O(m*n) time complexity. 
-# Hence the worst case time complexity for this algorithm is O(m^2 n^2).

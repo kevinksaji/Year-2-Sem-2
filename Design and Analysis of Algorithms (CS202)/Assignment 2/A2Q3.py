@@ -4,13 +4,13 @@ import random
 # the next denomination ~= the previous * 2, or plus/minus 1
 # for each denomination, generate a quantity between 10 and 20 inclusive
 
-# random.seed('coin')
-# curr = 1
-# denom = [(curr, random.randint(10, 20))]
-# for i in range(9):
-#     curr = 2 * curr + 1 - random.randrange(3)
-#     denom.append((curr, random.randint(10, 20)))
-# print(denom)
+random.seed('coin')
+curr = 1
+denom = [(curr, random.randint(10, 20))]
+for i in range(9):
+    curr = 2 * curr + 1 - random.randrange(3)
+    denom.append((curr, random.randint(10, 20)))
+print(denom)
 
 # solution to each subproblem, contain (1) the min number of coins, and (2) all plans with sum of coins being the min num of coins, this is because there is limited supply for each coin, one plan of x cents may allow us to reach x+5 cents, another plan may allow us to reach x+10 cents, depending on whether we have extra coins of 5 cents or 10 cents
 
