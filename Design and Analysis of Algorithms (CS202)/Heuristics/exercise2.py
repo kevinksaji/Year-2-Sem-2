@@ -26,7 +26,21 @@ def twoPairsExchange(tour):
     bestNeighbourCost = getCost(tour)
 
     #TODO: implement a neighbourhood search strategy which exchanes 2 pairs of cities 
-    # and see whether the tour is improved. 
+    # and see whether the tour is improved.
+    for i in range(0, len(tour)):
+        for j in range(0, len(tour)):
+            for k in range(0, len(tour)):
+                for l in range(0, len(tour)):
+                    if i != j and i != k and i != l and j != k and j != l and k != l:
+                        newtour = tour.copy()
+                        newtour[i] = tour[k]
+                        newtour[k] = tour[i]
+                        newtour[j] = tour[l]
+                        newtour[l] = tour[j]
+                        newCost = getCost(newtour)
+                        if newCost < bestNeighbourCost:
+                            bestNeighbourCost = newCost
+                            bestNeighbour = newtour
 
     return bestNeighbour, bestNeighbourCost
 
