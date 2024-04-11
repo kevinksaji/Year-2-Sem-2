@@ -33,6 +33,7 @@ def LCMS(a, b):
     # the approach would be similar but just looking at all the elements after i instead of before, 
     #to find the optimised sub problem?
                                 
+                                
     # fill dec_seq with lengths of decreasing subsequences starting at position i
     for i in reversed(range(m)): # iterate in revesed order
         for j in reversed(range(n)):
