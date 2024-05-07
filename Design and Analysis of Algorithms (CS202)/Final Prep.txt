@@ -1,0 +1,12 @@
+# Matrix Chain Multiplication (Bottom Up approach)
+
+# initialise matrices m to hold the total multiplication for each combination
+# initialise matrix s to track the position of the split
+
+m = [[0] * (n + 1) for _ in range(n + 1)]
+s = [[0] * (n + 1) for _ in range(n + 1)]
+
+for i in range(1, n+1):
+    m[i][i] = 0 # base cases
+
+for ()

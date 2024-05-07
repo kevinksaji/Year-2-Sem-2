@@ -16,4 +16,4 @@ for i in range(1, n+1): # i is the amount of cents we want to make up
             min_coin[i] = min(min_coin[i], 1 + min_coin[i-denom[j]]) # we take the minimum of the current minimum number of coins to make up i cents and 1 + the minimum number of coins to make up i-denom[j] cents
     
 for i in range (n+1):
-    print(i, min_coin[i])
+    print(i, min_coin[i]) 
